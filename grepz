@@ -1,0 +1,37 @@
+#!/bin/bash
+
+strings=("$@")
+
+echo "${strings[@]}"
+
+if [ ${#strings[@]} -eq 1 ]; then
+  many_strings=1
+fi
+
+first_string="${strings[0]}"
+files=$(grep -l -R -w "$first_string")
+
+rest_of_strings="${strings[@]:1}"
+
+for string in `echo "$rest_of_strings"`
+do
+  files=$(echo "$files" | while read filename
+    do
+      grep -w -l "$string" $filename
+    done)
+done
+
+echo
+
+for filename in `echo "$files"`
+do
+  echo "## ${filename}"
+  for string in "${strings[@]}"
+  do
+    #echo "- $string -"
+    [ -z $many_strings ] && echo "- $string -"
+    grep -n --colour "$string" "$filename"
+  done
+  echo
+done
+
